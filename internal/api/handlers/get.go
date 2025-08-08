@@ -1,19 +1,56 @@
 package handlers
 
 import (
-	"fmt"
+	"encoding/json"
+	"math/rand"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
-func Get() func(w http.ResponseWriter, r *http.Request) {
+const (
+	minValue = 1.0
+	maxValue = 10000.0
+)
+
+func Get(rtp float64, logger *zap.Logger) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Get called")
+		var multiplier float64
+
+		prob := rand.Float64()
+		boundary := minValue + (maxValue-minValue)*(1-rtp)
+		
+		if prob < rtp {
+			multiplier = randFloat(boundary, maxValue)
+
+		} else {
+			multiplier = randFloat(minValue, boundary)
+		}
+
+		writeMultiplier(w, logger, multiplier)
+		logger.Info("Get: successful get multiplier", zap.Float64("multiplier", multiplier))
+	}
+
+}
+
+func randFloat(min, max float64) float64 {
+	return min + rand.Float64()*(max-min)
+}
+
+func writeMultiplier(w http.ResponseWriter, logger *zap.Logger, multiplier float64) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	resp := response{
+		Multiplier: multiplier,
+	}
+
+	err := json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		logger.Error("writeMultiplier: failed to encoding response", zap.Error(err))
 	}
 }
 
-func WriteResult() {
-}
-
 type response struct {
-	Result string `json:"result"`
+	Multiplier float64 `json:"multiplier"`
 }

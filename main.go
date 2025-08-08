@@ -23,7 +23,7 @@ import (
 
 const (
 	pathToConfigFile = "./config/config.env"
-	shoutdownTime    = 30 * time.Second
+	shutdownTime    = 30 * time.Second
 )
 
 func main() {
@@ -34,14 +34,13 @@ func main() {
 	)
 	defer cancel()
 
-	rtpFlag := flag.Float64("rtp", 0, "")
+	rtp := flag.Float64("rtp", 0, "")
 	flag.Parse()
-	if *rtpFlag == 0 {
+	if *rtp == 0 {
 		log.Fatal("rtp flag must be specified")
-	} else if *rtpFlag > 1.0 || *rtpFlag < 0.0 {
-		log.Fatalf("invalid rtp flag value, ...: %f", *rtpFlag)
+	} else if *rtp > 1.0 || *rtp < 0.0 {
+		log.Fatalf("invalid rtp flag value, ...: %f", *rtp)
 	}
-	fmt.Println(*rtpFlag)
 
 	config, err := cconfig.New(pathToConfigFile)
 	if err != nil {
@@ -62,7 +61,7 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	router.Get("/get", handlers.Get())
+	router.Get("/get", handlers.Get(*rtp, logger))
 
 	srv := http.Server{
 		Addr:    fmt.Sprintf("%s:%d", config.HttpServer.Host, config.HttpServer.Port),
@@ -80,7 +79,7 @@ func main() {
 
 	logger.Info("received shutdown signal")
 
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shoutdownTime)
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTime)
 	defer shutdownCancel()
 
 	if err = srv.Shutdown(shutdownCtx); err != nil {
