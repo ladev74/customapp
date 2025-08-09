@@ -19,7 +19,7 @@ func Get(rtp float64, logger *zap.Logger) func(w http.ResponseWriter, r *http.Re
 
 		prob := rand.Float64()
 		boundary := minValue + (maxValue-minValue)*(1-rtp)
-		
+
 		if prob < rtp {
 			multiplier = randFloat(boundary, maxValue)
 
@@ -52,5 +52,5 @@ func writeMultiplier(w http.ResponseWriter, logger *zap.Logger, multiplier float
 }
 
 type response struct {
-	Multiplier float64 `json:"multiplier"`
+	Result float64 `json:"result"`
 }
