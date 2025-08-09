@@ -37,12 +37,12 @@ func randFloat(min, max float64) float64 {
 	return min + rand.Float64()*(max-min)
 }
 
-func writeMultiplier(w http.ResponseWriter, logger *zap.Logger, multiplier float64) {
+func writeMultiplier(w http.ResponseWriter, logger *zap.Logger, result float64) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
 	resp := response{
-		Multiplier: multiplier,
+		Result: result,
 	}
 
 	err := json.NewEncoder(w).Encode(resp)
